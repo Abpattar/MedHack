@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import './Navbar.css'
+import SplitText from "../components/SplitText"
 
 /* ── Inline SVG icons ── */
 const MedicalCrossIcon = () => (
@@ -33,7 +34,20 @@ function Navbar({ isLoggedIn, onLogout }) {
                 <span className="navbar__logo-icon">
                     <MedicalCrossIcon />
                 </span>
-                <span className="navbar__logo-text">Medrox</span>
+                <SplitText
+                    text="Medrox"
+                    className="navbar__logo-text"
+                    delay={50}
+                    duration={1.25}
+                    ease="power3.out"
+                    splitType="chars"
+                    from={{ opacity: 0, y: 40 }}
+                    to={{ opacity: 1, y: 0 }}
+                    threshold={0.1}
+                    rootMargin="-100px"
+                    textAlign="left"
+                    showCallback
+                />
             </Link>
 
             {/* Center Links */}
