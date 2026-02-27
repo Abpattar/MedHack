@@ -14,6 +14,7 @@ export default function FindDoctors() {
 
     const queryParams = new URLSearchParams(location.search);
     const query = queryParams.get("query");
+    const specialty = queryParams.get("specialty");
 
     useEffect(() => {
         const fetchDoctors = async () => {
@@ -29,7 +30,21 @@ export default function FindDoctors() {
                 .trim()
                 .split(/\s+/);
 
-            // AND matching logic
+            // First: try matching by extracted specialty
+            if (specialty) {
+                const { data: specialtyData, error: specialtyError } = await supabase
+                    .from("doctors")
+                    .select("*")
+                    .ilike("specialization", `%${specialty}%`);
+
+                if (!specialtyError && specialtyData && specialtyData.length > 0) {
+                    setResults(specialtyData);
+                    setLoading(false);
+                    return;
+                }
+            }
+
+            // Fallback: AND matching on symptoms column
             let queryBuilder = supabase
                 .from("doctors")
                 .select("*");
@@ -50,7 +65,7 @@ export default function FindDoctors() {
         };
 
         fetchDoctors();
-    }, [query]);
+    }, [query, specialty]);
 
     return (
         <div className="find-doctors-container">

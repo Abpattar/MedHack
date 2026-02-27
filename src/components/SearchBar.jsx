@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { extractSpecialty } from "../utils/extractSpecialty";
 
 export default function SearchBar() {
     const [query, setQuery] = useState("");
@@ -7,7 +8,8 @@ export default function SearchBar() {
 
     const handleSearch = () => {
         if (!query.trim()) return;
-        navigate(`/find-doctors?query=${query}`);
+        const specialty = extractSpecialty(query);
+        navigate(`/find-doctors?query=${encodeURIComponent(query)}&specialty=${encodeURIComponent(specialty)}`);
     };
 
     return (
