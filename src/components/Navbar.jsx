@@ -16,7 +16,7 @@ const SettingsIcon = () => (
     </svg>
 )
 
-function Navbar() {
+function Navbar({ isLoggedIn, onLogout }) {
     const location = useLocation()
 
     const navLinks = [
@@ -56,9 +56,15 @@ function Navbar() {
                 <button className="navbar__settings-btn" aria-label="Settings" id="settings-btn">
                     <SettingsIcon />
                 </button>
-                <button className="navbar__login-btn" id="login-btn">
-                    Login
-                </button>
+                {isLoggedIn ? (
+                    <button className="navbar__login-btn" id="logout-btn" onClick={onLogout}>
+                        Sign Out
+                    </button>
+                ) : (
+                    <Link to="/login" className="navbar__login-btn" id="login-btn" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+                        Login
+                    </Link>
+                )}
             </div>
         </nav>
     )
