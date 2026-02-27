@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
-import { supabaseLogs } from '../supabaseLogs'
+import { supabase } from '../supabase'          // Login DB
+import { supabaseLogs } from '../supabaseLogs'  // Dashboard DB
 import './Dashboard.css'
 
 function Dashboard() {
@@ -8,15 +9,44 @@ function Dashboard() {
 
   useEffect(() => {
     const fetchLogs = async () => {
-      const { data, error } = await supabaseLogs
+
+      // 1️⃣ Get logged-in user from Auth DB
+      const { data: userData, error: userError } = await supabase.auth.getUser()
+
+      if (userError || !userData.user) {
+        console.error('User not logged in')
+        setLoading(false)
+        return
+      }
+
+      const userEmail = userData.user.email
+
+      // 2️⃣ Find patient in Dashboard DB
+      const { data: patient, error: patientError } = await supabaseLogs
+        .from('patients')
+        .select('id')
+        .eq('email', userEmail)
+        .single()
+
+      if (patientError || !patient) {
+        console.error('Patient not found in dashboard DB')
+        setLoading(false)
+        return
+      }
+
+      const patientId = patient.id
+
+      // 3️⃣ Fetch only that patient’s logs
+      const { data: logs, error: logsError } = await supabaseLogs
         .from('medicine_logs')
         .select('medicine_name, provided_at, nurse_name')
+        .eq('patient_id', patientId)
         .order('provided_at', { ascending: false })
 
-      if (error) {
-        console.error(error)
+      if (logsError) {
+        console.error(logsError)
       } else {
-        setMedicineLogs(data)
+        setMedicineLogs(logs)
       }
 
       setLoading(false)
@@ -34,26 +64,41 @@ function Dashboard() {
       {!loading && medicineLogs.length === 0 && (
         <div className="dashboard-empty">No medicine logs found.</div>
       )}
-<div className="dashboard-timeline">
-  <div className="timeline">
-    {medicineLogs.map((log, index) => (
-      <div className={`timeline-item ${index % 2 === 0 ? 'left' : 'right'}`} key={index}>
-        <div className="timeline-dot"></div>
-        <div className="timeline-connector"></div>
-        <div className="timeline-card">
-          <div className="timeline-card-header">
-            <span className="timeline-card-title">{log.medicine_name}</span>
-            <span className="timeline-card-date">{new Date(log.provided_at).toLocaleDateString()}</span>
-          </div>
-          <div className="timeline-card-body">
-            <div className="timeline-card-nurse">Nurse: {log.nurse_name}</div>
-            <div className="timeline-card-time">{new Date(log.provided_at).toLocaleTimeString()}</div>
-          </div>
+
+      <div className="dashboard-timeline">
+        <div className="timeline">
+          {medicineLogs.map((log, index) => (
+            <div
+              className={`timeline-item ${index % 2 === 0 ? 'left' : 'right'}`}
+              key={index}
+            >
+              <div className="timeline-dot"></div>
+              <div className="timeline-connector"></div>
+
+              <div className="timeline-card">
+                <div className="timeline-card-header">
+                  <span className="timeline-card-title">
+                    {log.medicine_name}
+                  </span>
+                  <span className="timeline-card-date">
+                    {new Date(log.provided_at).toLocaleDateString()}
+                  </span>
+                </div>
+
+                <div className="timeline-card-body">
+                  <div className="timeline-card-nurse">
+                    Nurse: {log.nurse_name}
+                  </div>
+                  <div className="timeline-card-time">
+                    {new Date(log.provided_at).toLocaleTimeString()}
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          ))}
         </div>
       </div>
-    ))}
-  </div>
-</div>
     </div>
   )
 }

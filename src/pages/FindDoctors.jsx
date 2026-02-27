@@ -7,6 +7,9 @@ export default function FindDoctors() {
     const [results, setResults] = useState([]);
     const [loading, setLoading] = useState(false);
     const [expandedId, setExpandedId] = useState(null);
+    const [showBooking, setShowBooking] = useState(false);
+    const [selectedDate, setSelectedDate] = useState('');
+    const [selectedTime, setSelectedTime] = useState('');
     const location = useLocation();
 
     const queryParams = new URLSearchParams(location.search);
@@ -84,7 +87,7 @@ export default function FindDoctors() {
             {/* Expanded doctor card */}
             {expandedId && (
                 <div className="doctor-card-expanded">
-                    <button className="doctor-card-close-btn" onClick={() => setExpandedId(null)}>Close</button>
+                    <button className="doctor-card-close-btn" onClick={() => { setExpandedId(null); setShowBooking(false); }}>Close</button>
                     {results.filter(doc => doc.id === expandedId).map(doc => (
                         <>
                             <h2>{doc.name}</h2>
@@ -95,7 +98,38 @@ export default function FindDoctors() {
                             <p><b>Phone:</b> {doc.phone}</p>
                             <p><b>Email:</b> {doc.email}</p>
                             <p><b>About:</b> {doc.about || 'No details available.'}</p>
-                            <button className="doctor-card-book-btn">Book Appointment</button>
+                            <button className="doctor-card-book-btn" onClick={() => setShowBooking(true)}>Book Appointment</button>
+                            {showBooking && (
+                                <div className="booking-card">
+                                    <h3>Book Appointment</h3>
+                                    <label>
+                                        Date:
+                                        <input
+                                            type="date"
+                                            value={selectedDate}
+                                            onChange={e => setSelectedDate(e.target.value)}
+                                            className="booking-date-input"
+                                        />
+                                    </label>
+                                    <label>
+                                        Time:
+                                        <input
+                                            type="time"
+                                            value={selectedTime}
+                                            onChange={e => setSelectedTime(e.target.value)}
+                                            className="booking-time-input"
+                                        />
+                                    </label>
+                                    <button
+                                        className="doctor-card-book-btn"
+                                        style={{marginTop: 16}}
+                                        onClick={() => alert(`Appointment booked for ${selectedDate} at ${selectedTime}`)}
+                                        disabled={!selectedDate || !selectedTime}
+                                    >
+                                        Confirm Booking
+                                    </button>
+                                </div>
+                            )}
                         </>
                     ))}
                 </div>
