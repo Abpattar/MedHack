@@ -35,6 +35,7 @@ function FindDoctors() {
     const [results, setResults] = useState([])
     const [isSearching, setIsSearching] = useState(false)
     const [hasSearched, setHasSearched] = useState(false)
+    const [expandedId, setExpandedId] = useState(null)
 
     // Pick up query from URL (from the global search bar)
     useEffect(() => {
@@ -45,63 +46,91 @@ function FindDoctors() {
         }
     }, [searchParams])
 
+    // ─── Setup Supabase Connection ───
+    const SUPABASE_URL = "https://axzrjouxhlargxdyiuuh.supabase.co"
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF4enJqb3V4aGxhcmd4ZHlpdXVoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIxODExNDMsImV4cCI6MjA4Nzc1NzE0M30.yKILImV90BXZ38oTh8cZTpRb3gwc6d4LEntXhTGRVuE"
+
+    const detectSpecialist = (text) => {
+        text = text.toLowerCase().trim()
+        const mapping = [
+            { specialist: "Orthopedic", keywords: ["knee", "joint", "bone", "fracture", "back"] },
+            { specialist: "Cardiologist", keywords: ["chest", "heart", "breath", "pressure"] },
+            { specialist: "Dermatologist", keywords: ["skin", "rash", "itch", "acne"] },
+            { specialist: "Dentist", keywords: ["tooth", "gum", "jaw"] },
+            { specialist: "Neurologist", keywords: ["headache", "migraine", "dizziness"] }
+        ]
+
+        let bestMatch = "General Physician"
+        let maxScore = 0
+
+        mapping.forEach(group => {
+            let score = 0
+            group.keywords.forEach(keyword => {
+                if (text.includes(keyword)) score++
+            })
+
+            if (score > maxScore) {
+                maxScore = score
+                bestMatch = group.specialist
+            }
+        })
+        return bestMatch
+    }
+
     const performSearch = async (query) => {
         setIsSearching(true)
         setHasSearched(true)
         setResults([])
 
-        // ─── Placeholder: replace with actual API / database call ───
-        // Simulating a search delay
-        await new Promise((resolve) => setTimeout(resolve, 1200))
+        const specialist = detectSpecialist(query)
+        console.log("Detected Specialist:", specialist)
 
-        // Demo results — will be replaced with real data from your database
-        const demoResults = [
-            {
-                id: 1,
-                name: 'Dr. Sarah Mitchell',
-                specialty: 'General Physician',
-                rating: 4.8,
-                reviews: 124,
-                available: true,
-                experience: '12 years',
-            },
-            {
-                id: 2,
-                name: 'Dr. Rajesh Kumar',
-                specialty: 'Cardiologist',
-                rating: 4.9,
-                reviews: 89,
-                available: true,
-                experience: '18 years',
-            },
-            {
-                id: 3,
-                name: 'Dr. Emily Chen',
-                specialty: 'Dermatologist',
-                rating: 4.7,
-                reviews: 156,
-                available: false,
-                experience: '8 years',
-            },
-            {
-                id: 4,
-                name: 'Dr. Ahmed Hassan',
-                specialty: 'Neurologist',
-                rating: 4.6,
-                reviews: 67,
-                available: true,
-                experience: '15 years',
-            },
-        ]
+        try {
+            const response = await fetch(
+                `${SUPABASE_URL}/rest/v1/doctors?specialist=ilike.*${encodeURIComponent(specialist)}*`,
+                {
+                    headers: {
+                        apikey: SUPABASE_KEY,
+                        Authorization: `Bearer ${SUPABASE_KEY}`
+                    }
+                }
+            )
 
-        setResults(demoResults)
-        setIsSearching(false)
-    }
+            if (!response.ok) {
+                throw new Error('Network response was not ok')
+            }
 
-    const searchDoctors = (e) => {
-        e.preventDefault()
-        if (symptom.trim()) {
-            performSearch(symptom.trim())
+            const data = await response.json()
+            console.log("Doctors returned:", data)
+
+            if (data && data.length > 0) {
+                // Default sort by distance (lowest first)
+                data.sort((a, b) => a.distance - b.distance)
+
+                // Map database columns to our component's expected format
+                const mappedResults = data.map(doc => ({
+                    id: doc.id,
+                    name: doc.name,
+                    specialty: doc.specialist, // API uses 'specialist'
+                    clinic_name: doc.clinic_name, // extra DB field
+                    address: doc.address, // extra DB field
+                    price: doc.price, // extra DB field
+                    distance: doc.distance, // extra DB field
+                    rating: 4.8, // Mocked rating since DB lacks it
+                    reviews: Math.floor(Math.random() * 200) + 50, // Mocked reviews
+                    available: true, // Mocked availability
+                    experience: '10+ years', // Mocked experience
+                }))
+
+                setResults(mappedResults)
+            } else {
+                setResults([])
+            }
+        } catch (error) {
+            console.error("Database connection error:", error)
+            setResults([])
+        } finally {
+            setIsSearching(false)
         }
     }
 
@@ -117,37 +146,7 @@ function FindDoctors() {
                 <p className="find-doctors__subtitle">
                     Describe your symptoms and let our AI match you with the best specialists
                 </p>
-            </div>
-
-            {/* ── Search Section ── */}
-            <form className="find-doctors__search" onSubmit={searchDoctors}>
-                <div className="find-doctors__search-box">
-                    <span className="find-doctors__search-icon">
-                        <SearchIcon />
-                    </span>
-                    <input
-                        id="symptom-input"
-                        type="text"
-                        className="find-doctors__search-input"
-                        placeholder="Describe your symptoms... (e.g., headache, chest pain, skin rash)"
-                        value={symptom}
-                        onChange={(e) => setSymptom(e.target.value)}
-                    />
-                </div>
-                <button type="submit" className="find-doctors__search-btn" id="search-doctors-btn" disabled={isSearching}>
-                    {isSearching ? (
-                        <>
-                            <SpinnerIcon /> Searching...
-                        </>
-                    ) : (
-                        <>
-                            <SearchIcon /> Search Doctors
-                        </>
-                    )}
-                </button>
-            </form>
-
-            {/* ── Results Section ── */}
+            </div>            {/* ── Results Section ── */}
             <div className="find-doctors__results" id="results">
                 {isSearching && (
                     <div className="find-doctors__loading">
@@ -169,28 +168,53 @@ function FindDoctors() {
                         </h2>
                         <div className="find-doctors__results-grid">
                             {results.map((doctor) => (
-                                <div key={doctor.id} className="doctor-card" id={`doctor-${doctor.id}`}>
-                                    <div className="doctor-card__avatar">
-                                        <DoctorIcon />
-                                    </div>
-                                    <div className="doctor-card__info">
-                                        <h3 className="doctor-card__name">{doctor.name}</h3>
-                                        <p className="doctor-card__specialty">{doctor.specialty}</p>
-                                        <p className="doctor-card__experience">{doctor.experience} experience</p>
-                                        <div className="doctor-card__rating">
-                                            <StarIcon />
-                                            <span className="doctor-card__rating-value">{doctor.rating}</span>
-                                            <span className="doctor-card__reviews">({doctor.reviews} reviews)</span>
+                                <div
+                                    key={doctor.id}
+                                    className={`doctor-card ${expandedId === doctor.id ? 'doctor-card--expanded' : ''}`}
+                                    id={`doctor-${doctor.id}`}
+                                    onClick={() => setExpandedId(expandedId === doctor.id ? null : doctor.id)}
+                                >
+                                    <div className="doctor-card__header-content">
+                                        <div className="doctor-card__avatar">
+                                            <DoctorIcon />
+                                        </div>
+                                        <div className="doctor-card__info">
+                                            <h3 className="doctor-card__name">{doctor.name}</h3>
+                                            <p className="doctor-card__specialty">{doctor.specialty}</p>
+                                            <p className="doctor-card__clinic" style={{ fontSize: '13px', color: '#555', margin: '4px 0 2px' }}>
+                                                🏥 {doctor.clinic_name}
+                                            </p>
+                                            <p className="doctor-card__address" style={{ fontSize: '13px', color: '#777', margin: '0 0 4px' }}>
+                                                📍 {doctor.address} ({doctor.distance} km away)
+                                            </p>
+                                            <p className="doctor-card__price" style={{ fontSize: '14px', fontWeight: '600', color: '#0B7C91', margin: '4px 0 8px' }}>
+                                                💰 ₹{doctor.price}
+                                            </p>
+                                            <div className="doctor-card__rating">
+                                                <StarIcon />
+                                                <span className="doctor-card__rating-value">{doctor.rating}</span>
+                                                <span className="doctor-card__reviews">({doctor.reviews} reviews)</span>
+                                            </div>
+                                        </div>
+                                        <div className="doctor-card__actions">
+                                            <span className={`doctor-card__status ${doctor.available ? 'doctor-card__status--available' : 'doctor-card__status--unavailable'}`}>
+                                                {doctor.available ? 'Available' : 'Unavailable'}
+                                            </span>
+                                            <button className="doctor-card__book-btn" disabled={!doctor.available} onClick={(e) => e.stopPropagation()}>
+                                                {doctor.available ? 'Book Appointment' : 'Join Waitlist'}
+                                            </button>
                                         </div>
                                     </div>
-                                    <div className="doctor-card__actions">
-                                        <span className={`doctor-card__status ${doctor.available ? 'doctor-card__status--available' : 'doctor-card__status--unavailable'}`}>
-                                            {doctor.available ? 'Available' : 'Unavailable'}
-                                        </span>
-                                        <button className="doctor-card__book-btn" disabled={!doctor.available}>
-                                            {doctor.available ? 'Book Appointment' : 'Join Waitlist'}
-                                        </button>
-                                    </div>
+
+                                    {expandedId === doctor.id && (
+                                        <div className="doctor-card__details">
+                                            <h4>About {doctor.name}</h4>
+                                            <p>Experienced {doctor.specialty} with over {doctor.experience} of clinical practice. Dedicated to providing personalized and comprehensive care.</p>
+                                            <div className="doctor-card__schedule">
+                                                <strong>Consultation Hours:</strong> Mon-Fri, 9:00 AM - 5:00 PM
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             ))}
                         </div>
