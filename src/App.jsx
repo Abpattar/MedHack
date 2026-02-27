@@ -4,6 +4,8 @@ import Layout from './components/Layout'
 import Home from './pages/Home'
 import FindDoctors from './pages/FindDoctors'
 import Login from './pages/Login'
+import Dashboard from './pages/Dashboard'
+import Community from './pages/Community'
 import './App.css'
 
 function ProtectedRoute({ children, isLoggedIn }) {
@@ -49,6 +51,24 @@ function App() {
             element={
               <ProtectedRoute isLoggedIn={isLoggedIn}>
                 <FindDoctors />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute isLoggedIn={isLoggedIn}>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/community"
+            element={
+              <ProtectedRoute isLoggedIn={isLoggedIn}>
+                <Community />
               </ProtectedRoute>
             }
           />
