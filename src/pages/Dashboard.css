@@ -1,12 +1,12 @@
-/* Dashboard page styles */
+/* ===== Medicine Timeline ===== */
 .dashboard-container {
   background: var(--light-blue-tint);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-md);
-  padding: 32px 24px;
+  padding: 48px 32px;
   margin-top: 32px;
   width: 100%;
-  max-width: 600px;
+  max-width: 900px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -14,47 +14,181 @@
 
 .dashboard-title {
   color: var(--deep-teal);
-  font-size: 2rem;
-  font-weight: 600;
-  margin-bottom: 24px;
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 36px;
+  letter-spacing: -0.5px;
 }
 
-.dashboard-history-list {
+.dashboard-timeline {
   width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
+  position: relative;
+  padding: 48px 0;
 }
 
-.dashboard-history-item {
+.timeline {
+  position: relative;
+  width: 100%;
+  min-height: 100px;
+}
+
+.timeline-item {
+  position: relative;
+  width: 50%;
+  min-height: 140px;
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 48px;
+  animation: fadeInUp 0.4s ease forwards;
+}
+
+.timeline-item.left {
+  left: 0;
+  justify-content: flex-end;
+}
+
+.timeline-item.right {
+  left: 50%;
+  justify-content: flex-start;
+}
+
+.timeline-dot {
+  position: absolute;
+  top: 48px;
+  right: -38px;
+  left: auto;
+  width: 32px;
+  height: 32px;
+  background: var(--deep-teal);
+  border-radius: 50%;
+  box-shadow: 0 0 0 10px var(--light-blue-tint);
+  border: 4px solid #fff;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.timeline-item.right .timeline-dot {
+  left: -38px;
+  right: auto;
+}
+
+.timeline-connector {
+  position: absolute;
+  top: 64px;
+  right: -22px;
+  left: auto;
+  width: 32px;
+  height: 4px;
+  background: var(--teal-blue);
+  border-radius: 2px;
+  z-index: 1;
+}
+
+.timeline-item.right .timeline-connector {
+  left: -22px;
+  right: auto;
+}
+
+.timeline-card {
   background: #fff;
-  border-radius: var(--radius-sm);
-  box-shadow: var(--shadow-sm);
-  padding: 18px 16px;
-  margin-bottom: 16px;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  padding: 40px 32px;
+  min-width: 340px;
+  max-width: 480px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 16px;
+  font-size: 1.18rem;
+  position: relative;
+  z-index: 1;
+  border: 1px solid var(--light-blue-tint);
+  transition: box-shadow 0.25s, transform 0.25s;
+  margin-left: 56px;
 }
 
-.dashboard-history-doctor {
-  font-weight: 600;
+.timeline-item.right .timeline-card {
+  margin-left: 0;
+  margin-right: 56px;
+}
+
+.timeline-card:hover {
+  box-shadow: 0 12px 32px rgba(80,178,192,0.18);
+  transform: translateY(-8px) scale(1.04);
+}
+
+.timeline-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.timeline-card-title {
+  font-weight: 700;
   color: var(--navy-blue);
+  font-size: 1.35rem;
+  letter-spacing: -0.5px;
 }
 
-.dashboard-history-specialty {
+.timeline-card-date {
+  color: var(--deep-teal);
+  font-size: 1.08rem;
+  font-weight: 600;
+  background: var(--light-blue-tint);
+  border-radius: var(--radius-sm);
+  padding: 6px 14px;
+}
+
+.timeline-card-body {
+  color: var(--gray-text);
+  font-size: 1.08rem;
+  padding: 8px 0 0 0;
+}
+
+.timeline-card-nurse {
   color: var(--teal-blue);
-  font-size: 1.1rem;
+  font-size: 1.08rem;
+  margin-bottom: 6px;
+  font-weight: 500;
 }
 
-.dashboard-history-date {
+.timeline-card-time {
   color: var(--gray-text);
+  font-size: 1.02rem;
 }
 
-.dashboard-history-location {
-  color: var(--gray-text);
-  font-size: 0.95rem;
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 4px;
+  height: 100%;
+  background: var(--teal-blue);
+  transform: translateX(-50%);
+  z-index: 0;
+  border-radius: 2px;
 }
 
 .dashboard-empty {
   color: var(--gray-text);
   text-align: center;
-  margin-top: 24px;
+  margin-top: 32px;
+  font-size: 1.22rem;
+}
+
+@keyframes fadeInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
