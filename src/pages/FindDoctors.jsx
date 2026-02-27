@@ -6,8 +6,8 @@ import './FindDoctors.css';
 export default function FindDoctors() {
     const [results, setResults] = useState([]);
     const [loading, setLoading] = useState(false);
-    const [expandedId, setExpandedId] = useState(null);
     const [showBooking, setShowBooking] = useState(false);
+    const [expandedId, setExpandedId] = useState(null);
     const [selectedDate, setSelectedDate] = useState('');
     const [selectedTime, setSelectedTime] = useState('');
     const location = useLocation();
@@ -54,11 +54,10 @@ export default function FindDoctors() {
 
     return (
         <div className="find-doctors-container">
-            <h2 className="find-doctors-title">
-                {query
-                    ? `Doctors for: ${query}`
-                    : "Search for a symptom using the bar below"}
-            </h2>
+            <div className="find-doctors-header-row find-doctors-header-center">
+                <span className="find-doctors-title-badge">Doctors for:</span>
+                <h2 className="find-doctors-title-main">{query ? query : "Search for a symptom using the bar below"}</h2>
+            </div>
 
             {loading && <p>Loading...</p>}
 
@@ -71,69 +70,68 @@ export default function FindDoctors() {
                     {results.map((doc) => (
                         <div
                             key={doc.id}
-                            className="doctor-card"
-                            onClick={() => setExpandedId(doc.id)}
+                            className="doctor-card doctor-card-glow"
+                            onClick={() => { setExpandedId(doc.id); setShowBooking(false); }}
                         >
-                            <h3>{doc.name}</h3>
-                            <p><b>Specialization:</b> {doc.specialization}</p>
-                            <p><b>Location:</b> {doc.location}</p>
-                            <p><b>Experience:</b> {doc.experience_years} years</p>
-                            <p><b>Fee:</b> ₹{doc.consultation_fee}</p>
+                            <div className="doctor-card-photo-placeholder">
+                                <img src="/default-doctor.svg" alt="" />
+                            </div>
+                            <div className="doctor-card-content">
+                                <h3>{doc.name}</h3>
+                                <p><b>Specialization:</b> {doc.specialization}</p>
+                                <p><b>Location:</b> {doc.location}</p>
+                            </div>
                         </div>
                     ))}
                 </div>
             )}
 
-            {/* Expanded doctor card */}
-            {expandedId && (
-                <div className="doctor-card-expanded">
-                    <button className="doctor-card-close-btn" onClick={() => { setExpandedId(null); setShowBooking(false); }}>Close</button>
-                    {results.filter(doc => doc.id === expandedId).map(doc => (
-                        <>
-                            <h2>{doc.name}</h2>
-                            <p><b>Specialization:</b> {doc.specialization}</p>
-                            <p><b>Location:</b> {doc.location}</p>
-                            <p><b>Experience:</b> {doc.experience_years} years</p>
-                            <p><b>Consultation Fee:</b> ₹{doc.consultation_fee}</p>
-                            <p><b>Phone:</b> {doc.phone}</p>
-                            <p><b>Email:</b> {doc.email}</p>
-                            <p><b>About:</b> {doc.about || 'No details available.'}</p>
-                            <button className="doctor-card-book-btn" onClick={() => setShowBooking(true)}>Book Appointment</button>
-                            {showBooking && (
-                                <div className="booking-card">
-                                    <h3>Book Appointment</h3>
-                                    <label>
-                                        Date:
-                                        <input
-                                            type="date"
-                                            value={selectedDate}
-                                            onChange={e => setSelectedDate(e.target.value)}
-                                            className="booking-date-input"
-                                        />
-                                    </label>
-                                    <label>
-                                        Time:
-                                        <input
-                                            type="time"
-                                            value={selectedTime}
-                                            onChange={e => setSelectedTime(e.target.value)}
-                                            className="booking-time-input"
-                                        />
-                                    </label>
-                                    <button
-                                        className="doctor-card-book-btn"
-                                        style={{marginTop: 16}}
-                                        onClick={() => alert(`Appointment booked for ${selectedDate} at ${selectedTime}`)}
-                                        disabled={!selectedDate || !selectedTime}
-                                    >
-                                        Confirm Booking
-                                    </button>
+            {/* Expanded doctor modal */}
+            {expandedId && (() => {
+                const doc = results.find(d => d.id === expandedId);
+                if (!doc) return null;
+                return (
+                    <div className="doctor-card-expanded-modal-bg" onClick={() => { setExpandedId(null); setShowBooking(false); }}>
+                        <div className="doctor-card-expanded-modal" onClick={e => e.stopPropagation()}>
+                            <button className="doctor-card-expanded-close" onClick={() => { setExpandedId(null); setShowBooking(false); }}>×</button>
+                            <div className="doctor-card-expanded-img">
+                                <img src="/default-doctor.svg" alt="" />
+                            </div>
+                            <div className="doctor-card-expanded-main-content">
+                                <h2>{doc.name}</h2>
+                                <div className="doctor-card-expanded-specialization">{doc.specialization}</div>
+                                <div className="doctor-card-expanded-location">{doc.location}</div>
+                                <div className="doctor-card-expanded-details">
+                                    <div><b>Experience:</b> {doc.experience_years} years</div>
+                                    <div><b>Consultation Fee:</b> ₹{doc.consultation_fee}</div>
+                                    <div><b>Phone:</b> {doc.phone}</div>
+                                    <div><b>Email:</b> {doc.email}</div>
+                                    <div><b>About:</b> {doc.about || 'No details available.'}</div>
                                 </div>
-                            )}
-                        </>
-                    ))}
-                </div>
-            )}
+                                <button className="doctor-card-book-btn doctor-card-expanded-book-btn" onClick={() => setShowBooking(true)}>Book Appointment</button>
+                                {showBooking && (
+                                    <div className="booking-card booking-card-modal" onClick={e => e.stopPropagation()}>
+                                        <h3>Book Appointment</h3>
+                                        <label>
+                                            Date:
+                                            <input type="date" value={selectedDate} onChange={e => setSelectedDate(e.target.value)} className="booking-date-input" />
+                                        </label>
+                                        <label>
+                                            Time:
+                                            <input type="time" value={selectedTime} onChange={e => setSelectedTime(e.target.value)} className="booking-time-input" />
+                                        </label>
+                                        <button className="doctor-card-book-btn" style={{marginTop: 16}} onClick={() => alert(`Appointment booked for ${selectedDate} at ${selectedTime}`)} disabled={!selectedDate || !selectedTime}>
+                                            Confirm Booking
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                );
+            })()}
+
+
         </div>
     );
 }
