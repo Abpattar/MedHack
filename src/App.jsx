@@ -28,15 +28,22 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Public routes outside standard layout */}
+
+        {/* Login route */}
         <Route
           path="/login"
-          element={isLoggedIn ? <Navigate to="/" replace /> : <Login onLogin={handleLogin} />}
+          element={
+            isLoggedIn
+              ? <Navigate to="/" replace />
+              : <Login onLogin={handleLogin} />
+          }
         />
 
-        {/* Routes under shared Navbar/SearchBar */}
+        {/* Main layout routes */}
         <Route element={<Layout isLoggedIn={isLoggedIn} onLogout={handleLogout} />}>
+
           <Route path="/" element={<Home />} />
+
           <Route
             path="/find-doctors"
             element={
@@ -45,7 +52,7 @@ function App() {
               </ProtectedRoute>
             }
           />
-          {/* Add more protected routes here in the future like /dashboard, /community */}
+
         </Route>
       </Routes>
     </BrowserRouter>
