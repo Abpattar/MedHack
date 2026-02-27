@@ -12,26 +12,34 @@ export default function FindDoctors() {
 
     useEffect(() => {
         const fetchDoctors = async () => {
-            if (!query) {
+            if (!query || query.trim() === "") {
                 setResults([]);
                 return;
             }
 
             setLoading(true);
 
-            const words = query.toLowerCase().split(" ");
+            const words = query
+                .toLowerCase()
+                .trim()
+                .split(/\s+/);
 
-            const filter = words
-                .map(word => `symptoms.ilike.%${word}%`)
-                .join(",");
-
-            const { data, error } = await supabase
+            // AND matching logic
+            let queryBuilder = supabase
                 .from("doctors")
-                .select("*")
-                .or(filter);
+                .select("*");
 
-            if (error) console.error(error);
-            else setResults(data);
+            words.forEach(word => {
+                queryBuilder = queryBuilder.ilike("symptoms", `%${word}%`);
+            });
+
+            const { data, error } = await queryBuilder;
+
+            if (error) {
+                console.error("Supabase error:", error);
+            } else {
+                setResults(data);
+            }
 
             setLoading(false);
         };
@@ -40,7 +48,7 @@ export default function FindDoctors() {
     }, [query]);
 
     return (
-        <div style={{ padding: "40px" }}>
+        <div style={{ padding: "60px 40px" }}>
             <h2>
                 {query
                     ? `Doctors for: ${query}`
@@ -55,13 +63,18 @@ export default function FindDoctors() {
 
             {!loading &&
                 results.map((doc) => (
-                    <div key={doc.id} style={{
-                        border: "1px solid #ddd",
-                        padding: "20px",
-                        marginBottom: "20px",
-                        borderRadius: "10px",
-                        background: "#ffffff"
-                    }}>
+                    <div
+                        key={doc.id}
+                        style={{
+                            border: "1px solid #eee",
+                            padding: "20px",
+                            marginBottom: "20px",
+                            borderRadius: "12px",
+                            background: "#ffffff",
+                            boxShadow: "0 6px 15px rgba(0,0,0,0.05)",
+                            transition: "0.2s ease"
+                        }}
+                    >
                         <h3>{doc.name}</h3>
                         <p><b>Specialization:</b> {doc.specialization}</p>
                         <p><b>Location:</b> {doc.location}</p>
