@@ -17,13 +17,13 @@
     display: none;
     /* hidden on mobile, shown on md up */
     background: #fff;
-    border-radius: 12px;
+    border-radius: 16px;
     box-shadow: 0 14px 28px rgba(0, 0, 0, 0.1), 0 10px 10px rgba(0, 0, 0, 0.05);
     position: relative;
     overflow: hidden;
-    width: 768px;
+    width: 960px;
     max-width: 100%;
-    min-height: 480px;
+    min-height: 600px;
 }
 
 @media (min-width: 768px) {
@@ -88,16 +88,16 @@
     align-items: center;
     justify-content: center;
     flex-direction: column;
-    padding: 0 50px;
+    padding: 0 60px;
     height: 100%;
     text-align: center;
 }
 
 .login-form h1 {
     font-weight: 700;
-    font-size: 28px;
+    font-size: 34px;
     color: var(--navy-blue);
-    margin-bottom: 12px;
+    margin-bottom: 16px;
 }
 
 .social-container {
@@ -133,11 +133,11 @@
 .login-form input {
     background-color: #f3f4f6;
     border: none;
-    border-radius: 6px;
-    padding: 12px 16px;
-    margin: 8px 0;
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin: 10px 0;
     width: 100%;
-    font-size: 14px;
+    font-size: 16px;
 }
 
 .forgot-password {
@@ -153,17 +153,17 @@
 }
 
 .login-primary-btn {
-    border-radius: 20px;
+    border-radius: 24px;
     border: none;
     background: linear-gradient(135deg, var(--deep-teal), var(--teal-blue));
     color: #fff;
-    font-size: 12px;
+    font-size: 14px;
     font-weight: bold;
-    padding: 12px 45px;
+    padding: 14px 52px;
     letter-spacing: 1px;
     text-transform: uppercase;
     transition: transform 80ms ease-in, box-shadow 80ms ease-in;
-    margin-top: 8px;
+    margin-top: 12px;
 }
 
 .login-primary-btn:active {
@@ -242,27 +242,27 @@
 
 .overlay-panel h1 {
     font-weight: 700;
-    font-size: 28px;
-    margin-bottom: 16px;
+    font-size: 34px;
+    margin-bottom: 20px;
 }
 
 .overlay-panel p {
-    font-size: 14px;
+    font-size: 16px;
     font-weight: 400;
-    line-height: 20px;
+    line-height: 24px;
     letter-spacing: 0.5px;
-    margin: 10px 0 30px;
+    margin: 12px 0 36px;
 }
 
 .login-ghost-btn {
     background-color: transparent;
     border-color: #fff;
     border: 1px solid #fff;
-    border-radius: 20px;
+    border-radius: 24px;
     color: #fff;
-    font-size: 12px;
+    font-size: 14px;
     font-weight: bold;
-    padding: 12px 45px;
+    padding: 14px 52px;
     letter-spacing: 1px;
     text-transform: uppercase;
     transition: all 0.3s;

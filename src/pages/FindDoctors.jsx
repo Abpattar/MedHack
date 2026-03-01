@@ -10,7 +10,49 @@ export default function FindDoctors() {
     const [expandedId, setExpandedId] = useState(null);
     const [selectedDate, setSelectedDate] = useState('');
     const [selectedTime, setSelectedTime] = useState('');
+    const [bookingStatus, setBookingStatus] = useState(''); // '' | 'loading' | 'success' | 'error'
     const location = useLocation();
+
+    const bookAppointment = async () => {
+        setBookingStatus('loading');
+        try {
+            // 1. Get logged-in user
+            const { data: userData, error: userError } = await supabase.auth.getUser();
+            if (userError || !userData?.user) {
+                alert('Please log in to book an appointment.');
+                setBookingStatus('error');
+                return;
+            }
+
+            const user = userData.user;
+            const userId = user.id;
+            const patientName = user.user_metadata?.full_name || user.email;
+
+            // 2. Insert appointment using auth user data
+            const { error: insertError } = await supabase
+                .from('appointments')
+                .insert({
+                    user_id: userId,
+                    patient_id: userId,
+                    patient_name: patientName,
+                    appointment_date: selectedDate,
+                    appointment_time: selectedTime
+                });
+
+            if (insertError) {
+                console.error('Insert error:', insertError);
+                alert('Failed to book appointment. Please try again.');
+                setBookingStatus('error');
+                return;
+            }
+
+            setBookingStatus('success');
+        } catch (err) {
+            console.error('Booking error:', err);
+            alert('Something went wrong. Please try again.');
+            setBookingStatus('error');
+        }
+    };
 
     const queryParams = new URLSearchParams(location.search);
     const query = queryParams.get("query");
@@ -123,21 +165,36 @@ export default function FindDoctors() {
                                     <div><b>Email:</b> {doc.email}</div>
                                     <div><b>About:</b> {doc.about || 'No details available.'}</div>
                                 </div>
-                                <button className="doctor-card-book-btn doctor-card-expanded-book-btn" onClick={() => setShowBooking(true)}>Book Appointment</button>
+                                <button className="doctor-card-book-btn doctor-card-expanded-book-btn" onClick={() => { setShowBooking(true); setBookingStatus(''); }}>Book Appointment</button>
                                 {showBooking && (
                                     <div className="booking-card booking-card-modal" onClick={e => e.stopPropagation()}>
-                                        <h3>Book Appointment</h3>
-                                        <label>
-                                            Date:
-                                            <input type="date" value={selectedDate} onChange={e => setSelectedDate(e.target.value)} className="booking-date-input" />
-                                        </label>
-                                        <label>
-                                            Time:
-                                            <input type="time" value={selectedTime} onChange={e => setSelectedTime(e.target.value)} className="booking-time-input" />
-                                        </label>
-                                        <button className="doctor-card-book-btn" style={{marginTop: 16}} onClick={() => alert(`Appointment booked for ${selectedDate} at ${selectedTime}`)} disabled={!selectedDate || !selectedTime}>
-                                            Confirm Booking
-                                        </button>
+                                        {bookingStatus === 'success' ? (
+                                            <div style={{ textAlign: 'center', padding: '20px 0' }}>
+                                                <div style={{ fontSize: 40, marginBottom: 12 }}>✅</div>
+                                                <h3 style={{ color: 'var(--deep-teal)', marginBottom: 8 }}>Appointment Booked!</h3>
+                                                <p style={{ color: 'var(--gray-text)', fontSize: 15 }}>Your appointment on <b>{selectedDate}</b> at <b>{selectedTime}</b> has been confirmed.</p>
+                                            </div>
+                                        ) : (
+                                            <>
+                                                <h3>Book Appointment</h3>
+                                                <label>
+                                                    Date:
+                                                    <input type="date" value={selectedDate} onChange={e => setSelectedDate(e.target.value)} className="booking-date-input" />
+                                                </label>
+                                                <label>
+                                                    Time:
+                                                    <input type="time" value={selectedTime} onChange={e => setSelectedTime(e.target.value)} className="booking-time-input" />
+                                                </label>
+                                                <button
+                                                    className="doctor-card-book-btn"
+                                                    style={{ marginTop: 16 }}
+                                                    onClick={bookAppointment}
+                                                    disabled={!selectedDate || !selectedTime || bookingStatus === 'loading'}
+                                                >
+                                                    {bookingStatus === 'loading' ? 'Booking...' : 'Confirm Booking'}
+                                                </button>
+                                            </>
+                                        )}
                                     </div>
                                 )}
                             </div>
