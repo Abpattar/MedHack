@@ -19,10 +19,7 @@ function Login({ onLogin }) {
 
         const { data, error } = await supabase.auth.signUp({
             email,
-            password,
-            options: {
-                data: { full_name: name }
-            }
+            password
         })
 
         if (error) {
